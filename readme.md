@@ -1,0 +1,2 @@
+- https://www.youtube.com/watch?v=8fi7uSYlOdc
+- https://www.infoq.com/articles/build-a-container-golang/
