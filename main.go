@@ -1,4 +1,3 @@
-// go:build linux
 //go:build linux
 // +build linux
 
@@ -6,8 +5,11 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"os/exec"
+	"path/filepath"
+	"strconv"
 	"syscall"
 )
 
@@ -45,15 +47,17 @@ func parent() {
 func child() {
 	fmt.Println("running child process with pid: ", os.Getpid())
 
+	cmd := exec.Command(os.Args[2], os.Args[3:]...)
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
 	syscall.Sethostname([]byte("my-container"))
 	syscall.Chroot("/home/Ubuntu/building-containers")
 	syscall.Chdir("/")
 	syscall.Mount("proc", "proc", "proc", 0, "")
 
-	cmd := exec.Command(os.Args[2], os.Args[3:]...)
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
+	cg()
 
 	if err := cmd.Run(); err != nil {
 		fmt.Println("error: ", err)
@@ -61,4 +65,23 @@ func child() {
 	}
 
 	syscall.Unmount("/proc", 0)
+}
+
+func cg() {
+	cgroups := "/sys/fs/cgroup/"
+	pids := filepath.Join(cgroups, "pids")
+	err := os.MkdirAll(filepath.Join(pids, "user"), 0755)
+	if err != nil && !os.IsExist(err) {
+		panic(err)
+	}
+	must(ioutil.WriteFile(filepath.Join(pids, "user/pids.max"), []byte("20"), 0700))
+	// Removes the new cgroup in place after the container exists
+	must(ioutil.WriteFile(filepath.Join(pids, "user/notify_on_release"), []byte("1"), 0700))
+	must(ioutil.WriteFile(filepath.Join(pids, "user/cgroup.procs"), []byte(strconv.Itoa(os.Getpid())), 0700))
+}
+
+func must(err error) {
+	if err != nil {
+		panic(err)
+	}
 }
