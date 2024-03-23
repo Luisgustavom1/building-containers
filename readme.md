@@ -1,2 +1,3 @@
 - https://www.youtube.com/watch?v=8fi7uSYlOdc
 - https://www.infoq.com/articles/build-a-container-golang/
+- https://www.youtube.com/watch?v=sK5i-N34im8&t=10s
