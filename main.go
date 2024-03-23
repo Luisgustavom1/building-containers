@@ -46,6 +46,8 @@ func parent() {
 func child() {
 	fmt.Println("running child process with pid: ", os.Getpid())
 
+	cg()
+
 	cmd := exec.Command(os.Args[2], os.Args[3:]...)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
@@ -53,10 +55,8 @@ func child() {
 
 	syscall.Sethostname([]byte("my-container"))
 	syscall.Chroot("/home/Ubuntu/building-containers")
-	syscall.Chdir("/")
+	os.Chdir("/")
 	syscall.Mount("proc", "proc", "proc", 0, "")
-
-	cg()
 
 	if err := cmd.Run(); err != nil {
 		fmt.Println("error: ", err)
