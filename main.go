@@ -1,9 +1,13 @@
+//go:build linux
+// +build linux
+
 package main
 
 import (
 	"fmt"
 	"os"
 	"os/exec"
+	"syscall"
 )
 
 func main() {
@@ -18,8 +22,13 @@ func main() {
 }
 
 func parent() {
-	a := append([]string{"child"}, os.Args[2:]...)
-	cmd := exec.Command("/proc/self/exe", a...)
+	childArgs := append([]string{"child"}, os.Args[2:]...)
+	// /proc/self is a real symbolic link to the /proc/ subdirectory of the process that is making the call.
+	cmd := exec.Command("/proc/self/exe", childArgs...)
+	cmd.SysProcAttr = &syscall.SysProcAttr{
+		Cloneflags: syscall.CLONE_NEWUTS | syscall.CLONE_NEWPID | syscall.CLONE_NEWNS,
+		Unshareflags: syscall.CLONE_NEWNS,
+	}
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
