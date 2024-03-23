@@ -5,7 +5,6 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -74,10 +73,10 @@ func cg() {
 	if err != nil && !os.IsExist(err) {
 		panic(err)
 	}
-	must(ioutil.WriteFile(filepath.Join(pids, "user/pids.max"), []byte("20"), 0700))
+	must(os.WriteFile(filepath.Join(pids, "user/pids.max"), []byte("20"), 0700))
 	// Removes the new cgroup in place after the container exists
-	must(ioutil.WriteFile(filepath.Join(pids, "user/notify_on_release"), []byte("1"), 0700))
-	must(ioutil.WriteFile(filepath.Join(pids, "user/cgroup.procs"), []byte(strconv.Itoa(os.Getpid())), 0700))
+	must(os.WriteFile(filepath.Join(pids, "user/notify_on_release"), []byte("1"), 0700))
+	must(os.WriteFile(filepath.Join(pids, "user/cgroup.procs"), []byte(strconv.Itoa(os.Getpid())), 0700))
 }
 
 func must(err error) {
