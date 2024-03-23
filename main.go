@@ -24,6 +24,7 @@ func main() {
 func parent() {
 	childArgs := append([]string{"child"}, os.Args[2:]...)
 	// /proc/self is a real symbolic link to the /proc/ subdirectory of the process that is making the call.
+	// https://elixir.bootlin.com/linux/latest/source/fs/proc/self.c
 	cmd := exec.Command("/proc/self/exe", childArgs...)
 	cmd.SysProcAttr = &syscall.SysProcAttr{
 		Cloneflags: syscall.CLONE_NEWUTS | syscall.CLONE_NEWPID | syscall.CLONE_NEWNS,
